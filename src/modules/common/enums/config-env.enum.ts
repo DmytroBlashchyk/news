@@ -1,0 +1,10 @@
+export enum ConfigEnvEnum {
+  NODE_ENV = 'NODE_ENV',
+  APP_PORT = 'APP_PORT',
+  DB_HOST = 'DB_HOST',
+  DB_USER = 'DB_USER',
+  DB_PASSWORD = 'DB_PASSWORD',
+
+  REDIS_HOST = 'REDIS_HOST',
+  REDIS_PORT = 'REDIS_PORT',
+}

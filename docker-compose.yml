@@ -1,0 +1,54 @@
+version: '3.8'
+
+services:
+  charging_app:
+    build:
+      context: ./
+      dockerfile: Dockerfile
+      target: base
+    container_name: charging_app
+    restart: on-failure:5
+    ports:
+      - '${APP_PORT}:${APP_PORT}'
+    networks:
+      - webnet
+    volumes:
+      - ./src:/home/node/app/src
+    env_file:
+      - .env
+    init: true
+    entrypoint: >
+      sh -c "npm run db:init && npm run build &&
+             exec node dist/src/main.js"
+    healthcheck:
+      test: [ "CMD", "curl", "-f", "http://localhost:${APP_PORT}/health" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 40s
+  charging_queue:
+    build:
+      context: ./
+      dockerfile: Dockerfile
+      target: base
+    container_name: charging_queue
+    restart: on-failure:5
+    ports:
+      - '${QUEUE_PORT}:${QUEUE_PORT}'
+    networks:
+      - webnet
+    volumes:
+      - ./src:/home/node/app/src
+    depends_on:
+      - charging_app
+    env_file:
+      - .env
+    init: true
+    entrypoint: >
+      sh -c "echo 'Waiting for charging_app to be ready...' &&
+             until curl -s http://charging_app:${APP_PORT}/health > /dev/null; do sleep 2; echo 'Waiting...'; done &&
+             npm run build:queue &&
+             exec node dist-queue/src/queue-entrypoint.js"
+networks:
+  webnet:
+    driver: bridge

@@ -1,0 +1,80 @@
+version: '3.7'
+
+services:
+  news_redis:
+    image: redis:6.2.6
+    container_name: news_redis
+    networks:
+      - webnet
+    volumes:
+      - redisdata:/var/lib/redis/data
+    command: --port '${REDIS_PORT}'
+    expose:
+      - '${REDIS_PORT}'
+    ports:
+      - '${REDIS_PORT}:${REDIS_PORT}'
+
+  news_db:
+    image: 'bitnami/postgresql:latest'
+    container_name: news_db
+    networks:
+      - webnet
+    ports:
+      - '${DB_PORT}:${DB_PORT}'
+    volumes:
+      - 'postgresql_master_data:/bitnami/postgresql'
+    environment:
+      - POSTGRESQL_USERNAME=${DB_USER}
+      - POSTGRESQL_PASSWORD=${DB_PASSWORD}
+      - POSTGRESQL_DATABASE=${DB_NAME}
+  news_app:
+    build:
+      context: ./
+      dockerfile: Dockerfile
+      target: base
+    container_name: news_app
+    ports:
+      - '${APP_PORT}:${APP_PORT}'
+    networks:
+      - webnet
+    environment:
+      DB_HOST: news_db
+      REDIS_HOST: news_redis
+    volumes:
+      - ./src:/home/node/app/src
+    depends_on:
+      - news_db
+      - news_redis
+    env_file:
+      - .env
+    command: bash -c "pnpm start:dev"
+#  charging_queue:
+#    build:
+#      context: ./
+#      dockerfile: Dockerfile
+#      target: base
+#    container_name: charging_queue
+#    ports:
+#      - '${QUEUE_PORT}:${QUEUE_PORT}'
+#    networks:
+#      - webnet
+#    environment:
+#      DB_HOST: charging_db_master
+#      REDIS_HOST: charging_redis
+#    volumes:
+#      - ./src:/home/node/app/src
+#    depends_on:
+#      - charging_app
+#      - charging_db_master
+#      - charging_db_slave
+#      - charging_redis
+#    env_file:
+#      - .env
+#    command: bash -c "npm run queue:dev"
+networks:
+  webnet:
+    driver: bridge
+
+volumes:
+  redisdata:
+  postgresql_master_data:
