@@ -7,4 +7,6 @@ export enum ConfigEnvEnum {
 
   REDIS_HOST = 'REDIS_HOST',
   REDIS_PORT = 'REDIS_PORT',
+  REDIS_USER = 'REDIS_USER',
+  REDIS_PASSWORD = 'REDIS_PASSWORD',
 }

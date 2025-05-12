@@ -4,6 +4,8 @@ import { EnvValidationSchema } from 'modules/common/utils/joi-validation-for-env
 import { PostsModule } from 'modules/posts/posts.module';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { typeormFactory } from 'modules/db/utils/typeOrmFactory';
+import { BullModule } from '@nestjs/bull';
+import { redisFactory } from 'modules/common/utils/redisFactory';
 
 @Module({
   imports: [
@@ -15,6 +17,11 @@ import { typeormFactory } from 'modules/db/utils/typeOrmFactory';
       imports: [ConfigModule],
       useFactory: typeormFactory,
       inject: [ConfigService],
+    }),
+    BullModule.registerQueueAsync({
+      imports: [ConfigModule],
+      inject: [ConfigService],
+      useFactory: redisFactory,
     }),
     PostsModule,
   ],

@@ -1,18 +1,18 @@
 version: '3.7'
 
 services:
-  news_redis:
-    image: redis:6.2.6
-    container_name: news_redis
-    networks:
-      - webnet
-    volumes:
-      - redisdata:/var/lib/redis/data
-    command: --port '${REDIS_PORT}'
-    expose:
-      - '${REDIS_PORT}'
-    ports:
-      - '${REDIS_PORT}:${REDIS_PORT}'
+#  news_redis:
+#    image: redis:6.2.6
+#    container_name: news_redis
+#    networks:
+#      - webnet
+#    volumes:
+#      - redisdata:/var/lib/redis/data
+#    command: --port '${REDIS_PORT}'
+#    expose:
+#      - '${REDIS_PORT}'
+#    ports:
+#      - '${REDIS_PORT}:${REDIS_PORT}'
 
   news_db:
     image: 'bitnami/postgresql:latest'
@@ -39,12 +39,12 @@ services:
       - webnet
     environment:
       DB_HOST: news_db
-      REDIS_HOST: news_redis
+#      REDIS_HOST: news_redis
     volumes:
       - ./src:/home/node/app/src
     depends_on:
       - news_db
-      - news_redis
+#      - news_redis
     env_file:
       - .env
     init: true
@@ -67,13 +67,13 @@ services:
       - webnet
     environment:
       DB_HOST: news_db
-      REDIS_HOST: news_redis
+#      REDIS_HOST: news_redis
     volumes:
       - ./src:/home/node/app/src
     depends_on:
       - news_app
       - news_db
-      - news_redis
+#      - news_redis
     env_file:
       - .env
     command: bash -c "pnpm queue:dev"
@@ -82,5 +82,5 @@ networks:
     driver: bridge
 
 volumes:
-  redisdata:
+#  redisdata:
   postgresql_master_data:
