@@ -47,30 +47,36 @@ services:
       - news_redis
     env_file:
       - .env
+    init: true
     command: bash -c "pnpm start:dev"
-#  charging_queue:
-#    build:
-#      context: ./
-#      dockerfile: Dockerfile
-#      target: base
-#    container_name: charging_queue
-#    ports:
-#      - '${QUEUE_PORT}:${QUEUE_PORT}'
-#    networks:
-#      - webnet
-#    environment:
-#      DB_HOST: charging_db_master
-#      REDIS_HOST: charging_redis
-#    volumes:
-#      - ./src:/home/node/app/src
-#    depends_on:
-#      - charging_app
-#      - charging_db_master
-#      - charging_db_slave
-#      - charging_redis
-#    env_file:
-#      - .env
-#    command: bash -c "npm run queue:dev"
+    healthcheck:
+      test: [ "CMD", "curl", "-f", "http://localhost:${APP_PORT}/health" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 40s
+  queue:
+    build:
+      context: ./
+      dockerfile: Dockerfile
+      target: base
+    container_name: queue
+    ports:
+      - '${QUEUE_PORT}:${QUEUE_PORT}'
+    networks:
+      - webnet
+    environment:
+      DB_HOST: news_db
+      REDIS_HOST: news_redis
+    volumes:
+      - ./src:/home/node/app/src
+    depends_on:
+      - news_app
+      - news_db
+      - news_redis
+    env_file:
+      - .env
+    command: bash -c "pnpm queue:dev"
 networks:
   webnet:
     driver: bridge
