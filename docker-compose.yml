@@ -8,7 +8,7 @@ services:
       target: base
     container_name: news_app
     ports:
-      - '${APP_PORT}:${APP_PORT}'
+      - '80:${APP_PORT}'
     networks:
       - webnet
     volumes:
