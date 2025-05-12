@@ -13,12 +13,14 @@ export function redisFactory(config: ConfigService): RedisOptions {
   const port = config.get(ConfigEnvEnum.REDIS_PORT);
   const username = config.get(ConfigEnvEnum.REDIS_USER);
   const password = config.get(ConfigEnvEnum.REDIS_PASSWORD);
-
-  return {
-    host,
-    port,
-    username,
-    password,
-    // db,
-  };
+  if (username && password) {
+    return {
+      host,
+      port,
+      username,
+      password,
+    };
+  } else {
+    return { host, port };
+  }
 }

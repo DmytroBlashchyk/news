@@ -1,13 +1,12 @@
-version: '3.8'
+version: '3.7'
 
 services:
-  charging_app:
+  news_app:
     build:
       context: ./
       dockerfile: Dockerfile
       target: base
-    container_name: charging_app
-    restart: on-failure:5
+    container_name: news_app
     ports:
       - '${APP_PORT}:${APP_PORT}'
     networks:
@@ -18,7 +17,7 @@ services:
       - .env
     init: true
     entrypoint: >
-      sh -c "npm run db:init && npm run build &&
+      sh -c "pnpm build &&
              exec node dist/src/main.js"
     healthcheck:
       test: [ "CMD", "curl", "-f", "http://localhost:${APP_PORT}/health" ]
@@ -26,28 +25,25 @@ services:
       timeout: 5s
       retries: 5
       start_period: 40s
-  charging_queue:
+  queue:
     build:
       context: ./
       dockerfile: Dockerfile
       target: base
-    container_name: charging_queue
-    restart: on-failure:5
-    ports:
-      - '${QUEUE_PORT}:${QUEUE_PORT}'
+    container_name: queue
     networks:
       - webnet
     volumes:
       - ./src:/home/node/app/src
     depends_on:
-      - charging_app
+      - news_app
     env_file:
       - .env
     init: true
     entrypoint: >
       sh -c "echo 'Waiting for charging_app to be ready...' &&
-             until curl -s http://charging_app:${APP_PORT}/health > /dev/null; do sleep 2; echo 'Waiting...'; done &&
-             npm run build:queue &&
+             until curl -s http://news_app:${APP_PORT}/health > /dev/null; do sleep 2; echo 'Waiting...'; done &&
+             pnpm run build:queue &&
              exec node dist-queue/src/queue-entrypoint.js"
 networks:
   webnet:
